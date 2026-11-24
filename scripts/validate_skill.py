@@ -39,7 +39,11 @@ def _parse_frontmatter(text: str) -> dict[str, str]:
             break
         if ":" in line:
             key, _, value = line.partition(":")
-            fields[key.strip()] = value.strip()
+            value = value.strip()
+            # A quoted YAML scalar ("x" or 'x') means x, so `name: ""` is empty.
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1].strip()
+            fields[key.strip()] = value
 
     if not closed:
         raise ValueError("frontmatter block is not closed with a second '---'")
